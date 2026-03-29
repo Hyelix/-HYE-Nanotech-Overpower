@@ -10,7 +10,8 @@ namespace Nanotech
     {
         public override void ConsumeIngredient(Thing ingredient, RecipeDef recipe, Map map)
         {
-            var costs = CostListCalculator.CostListAdjusted(ingredient.def, ingredient.Stuff, true);
+            Thing itemReal = ingredient.GetInnerIfMinified();
+            var costs = CostListCalculator.CostListAdjusted(itemReal.def, itemReal.Stuff, true);
             var dropPos = ingredient.PositionHeld;
             int stackMultiplier = ingredient.stackCount;
 

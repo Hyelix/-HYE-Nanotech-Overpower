@@ -2,7 +2,7 @@ using Verse;
 
 namespace Nanotech
 {
-    public class Projectile_ApplyAnesthetic : Bullet
+    public class Projectile_ApplyAnesthetic : Projectile
     {
         protected override void Impact(Thing hitThing, bool blockedByShield = false)
         {

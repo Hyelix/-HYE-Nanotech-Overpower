@@ -80,7 +80,8 @@ namespace Nanotech
                 // Fire
                 if (Props.extinguishFires && firesLeft > 0 && Props.fireSizePerPulse > 0f)
                 {
-                    for (int fi = 0; fi < things.Count; fi++)
+                    // LOOP INVERTIDO AQUI
+                    for (int fi = things.Count - 1; fi >= 0; fi--)
                     {
                         if (firesLeft <= 0) break;
                         if (things[fi] is Fire f)
@@ -96,7 +97,8 @@ namespace Nanotech
                 // Filth
                 if (Props.cleanFilth && Props.filthLevelsPerPulse > 0)
                 {
-                    for (int fi = 0; fi < things.Count; fi++)
+                    // LOOP INVERTIDO AQUI
+                    for (int fi = things.Count - 1; fi >= 0; fi--)
                     {
                         if (things[fi] is Filth f)
                         {
@@ -107,7 +109,8 @@ namespace Nanotech
                     }
                 }
 
-                for (int i = 0; i < things.Count; i++)
+                // LOOP PRINCIPAL INVERTIDO AQUI
+                for (int i = things.Count - 1; i >= 0; i--)
                 {
                     var t = things[i];
                     if (t.Destroyed) continue;
@@ -302,7 +305,7 @@ namespace Nanotech
         {
             if (h?.def == null) return false;
             if (_fertilityKeywordCache.TryGetValue(h.def, out bool cached)) return cached;
-            bool result = HediffMatchesFertilityKeywords(h);
+            bool result = HediffMatchesKeywords(h, FertilityKeywords);
             _fertilityKeywordCache[h.def] = result;
             return result;
         }
