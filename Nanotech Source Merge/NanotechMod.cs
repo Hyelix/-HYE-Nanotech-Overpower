@@ -56,7 +56,7 @@ namespace Nanotech
             Settings = GetSettings<NanotechSettings>();
         }
 
-        public override string SettingsCategory() => "Nanotech";
+        public override string SettingsCategory() => "Nanotech Overpower";
 
         public override void DoSettingsWindowContents(Rect inRect)
         {

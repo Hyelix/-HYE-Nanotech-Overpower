@@ -92,8 +92,7 @@ namespace Nanotech
         public override void PostDestroy(DestroyMode mode, Map previousMap)
         {
             base.PostDestroy(mode, previousMap);
-            foreach (var p in trackedExpire.Keys)
-                NanoMechBoostManager.Unregister(p, parent, Props.hediff);
+            NanoMechBoostManager.CleanupForSource(parent, Props.hediff);
             trackedExpire.Clear();
         }
     }
