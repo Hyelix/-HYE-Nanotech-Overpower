@@ -13,6 +13,12 @@ namespace Nanotech
         private CompPowerTrader power;
         private List<IntVec3> cachedCells = new List<IntVec3>();
 
+        private static readonly Dictionary<HediffDef, bool> _fertilityKeywordCache = new Dictionary<HediffDef, bool>();
+        private static readonly List<Hediff_Injury> _tmpInjuries = new List<Hediff_Injury>();
+        private static readonly List<Hediff> _tmpDiseases = new List<Hediff>();
+        private static readonly List<BodyPartRecord> _tmpMissingParts = new List<BodyPartRecord>();
+        private static readonly HashSet<BodyPartRecord> _tmpMissingPartsSet = new HashSet<BodyPartRecord>();
+
         private static readonly string[] FertilityKeywords =
         {
             "vasect", "vasectomy",
@@ -69,33 +75,38 @@ namespace Nanotech
 
             foreach (var cell in cachedCells)
             {
+                var things = cell.GetThingList(map);
+
                 // Fire
                 if (Props.extinguishFires && firesLeft > 0 && Props.fireSizePerPulse > 0f)
                 {
-                    var fires = cell.GetThingList(map).OfType<Fire>().ToList();
-                    foreach (var f in fires)
+                    for (int fi = 0; fi < things.Count; fi++)
                     {
                         if (firesLeft <= 0) break;
-                        float newSize = Mathf.Max(0f, f.fireSize - Props.fireSizePerPulse);
-                        if (newSize <= Props.fireExtinguishThreshold) f.Destroy(DestroyMode.Vanish);
-                        else f.fireSize = newSize;
-                        firesLeft--;
+                        if (things[fi] is Fire f)
+                        {
+                            float newSize = Mathf.Max(0f, f.fireSize - Props.fireSizePerPulse);
+                            if (newSize <= Props.fireExtinguishThreshold) f.Destroy(DestroyMode.Vanish);
+                            else f.fireSize = newSize;
+                            firesLeft--;
+                        }
                     }
                 }
 
                 // Filth
                 if (Props.cleanFilth && Props.filthLevelsPerPulse > 0)
                 {
-                    var filths = cell.GetThingList(map).OfType<Filth>().ToList();
-                    foreach (var f in filths)
+                    for (int fi = 0; fi < things.Count; fi++)
                     {
-                        int n = Props.filthLevelsPerPulse;
-                        while (n-- > 0 && !f.Destroyed)
-                            f.ThinFilth();
+                        if (things[fi] is Filth f)
+                        {
+                            int n = Props.filthLevelsPerPulse;
+                            while (n-- > 0 && !f.Destroyed)
+                                f.ThinFilth();
+                        }
                     }
                 }
 
-                var things = cell.GetThingList(map);
                 for (int i = 0; i < things.Count; i++)
                 {
                     var t = things[i];
@@ -188,12 +199,19 @@ namespace Nanotech
         {
             if (totalHeal <= 0f) return;
 
-            var injuries = pawn.health.hediffSet.hediffs.OfType<Hediff_Injury>().ToList();
-            if (injuries.Count == 0) return;
-
-            float perInjury = totalHeal / injuries.Count;
-            foreach (var inj in injuries)
+            _tmpInjuries.Clear();
+            var hediffs = pawn.health.hediffSet.hediffs;
+            for (int i = 0; i < hediffs.Count; i++)
             {
+                if (hediffs[i] is Hediff_Injury inj)
+                    _tmpInjuries.Add(inj);
+            }
+            if (_tmpInjuries.Count == 0) return;
+
+            float perInjury = totalHeal / _tmpInjuries.Count;
+            for (int i = 0; i < _tmpInjuries.Count; i++)
+            {
+                var inj = _tmpInjuries[i];
                 if (inj.IsPermanent())
                 {
                     if (healPermanent)
@@ -209,28 +227,34 @@ namespace Nanotech
                 }
             }
 
-            foreach (var h in injuries.Where(h => h.Bleeding))
-                h.Severity = Mathf.Max(0f, h.Severity - 0.01f * totalHeal);
+            for (int i = 0; i < _tmpInjuries.Count; i++)
+            {
+                var inj = _tmpInjuries[i];
+                if (inj.Bleeding)
+                    inj.Severity = Mathf.Max(0f, inj.Severity - 0.01f * totalHeal);
+            }
         }
 
         private void HealDiseases(Pawn pawn, float perPulse, bool affectAnesthetic, float anesthPerPulse)
         {
             if (perPulse > 0f)
             {
-                var toProcess = pawn.health.hediffSet.hediffs
-                    .Where(h =>
-                        h?.def != null &&
-                        h.def.isBad == true &&
-                        !(h is Hediff_Injury) &&
-                        !(h is Hediff_MissingPart) &&
-                        !(h is Hediff_Addiction) &&
-                        !(h is Hediff_AddedPart) &&
-                        !(h is Hediff_Implant) &&
-                        !HediffMatchesKeywords(h, FertilityKeywords))
-                    .ToList();
-
-                foreach (var h in toProcess)
+                _tmpDiseases.Clear();
+                var hediffs = pawn.health.hediffSet.hediffs;
+                for (int i = 0; i < hediffs.Count; i++)
                 {
+                    var h = hediffs[i];
+                    if (h?.def == null) continue;
+                    if (h.def.isBad != true) continue;
+                    if (h is Hediff_Injury || h is Hediff_MissingPart || h is Hediff_Addiction ||
+                        h is Hediff_AddedPart || h is Hediff_Implant) continue;
+                    if (HediffMatchesFertilityKeywords(h)) continue;
+                    _tmpDiseases.Add(h);
+                }
+
+                for (int i = 0; i < _tmpDiseases.Count; i++)
+                {
+                    var h = _tmpDiseases[i];
                     float newSev = Mathf.Max(0f, h.Severity - perPulse);
                     h.Severity = newSev;
                     if (Props.removeDiseaseIfLow && newSev <= Props.removeThreshold)
@@ -274,6 +298,15 @@ namespace Nanotech
             return false;
         }
 
+        private static bool HediffMatchesFertilityKeywords(Hediff h)
+        {
+            if (h?.def == null) return false;
+            if (_fertilityKeywordCache.TryGetValue(h.def, out bool cached)) return cached;
+            bool result = HediffMatchesFertilityKeywords(h);
+            _fertilityKeywordCache[h.def] = result;
+            return result;
+        }
+
         private static bool HediffMatchesKeywords(Hediff h, string[] keywords)
         {
             if (h?.def == null || keywords == null || keywords.Length == 0) return false;
@@ -282,7 +315,7 @@ namespace Nanotech
             foreach (var k in keywords)
             {
                 if (dn.IndexOf(k, System.StringComparison.OrdinalIgnoreCase) >= 0) return true;
-                if (!string.IsNullOrEmpty(lbl) && lbl.IndexOf(k, System.StringComparison.OrdinalIgnoreCase) >= 0) return true;
+                if (lbl.IndexOf(k, System.StringComparison.OrdinalIgnoreCase) >= 0) return true;
             }
             return false;
         }
@@ -341,13 +374,19 @@ namespace Nanotech
             int remaining = Mathf.Max(0, Props.missingPartsPerPulse);
             if (remaining == 0) return;
 
-            var missingParts = pawn.health.hediffSet.hediffs
-                .OfType<Hediff_MissingPart>()
-                .Select(h => h.Part)
-                .Where(part => part != null && part.def != null && part.def.defName != "Brain")
-                .Distinct()
-                .OrderBy(AncestorsCount)
-                .ToList();
+            _tmpMissingParts.Clear();
+            _tmpMissingPartsSet.Clear();
+            var hediffs = pawn.health.hediffSet.hediffs;
+            for (int i = 0; i < hediffs.Count; i++)
+            {
+                if (!(hediffs[i] is Hediff_MissingPart mp)) continue;
+                var part = mp.Part;
+                if (part == null || part.def == null || part.def.defName == "Brain") continue;
+                if (_tmpMissingPartsSet.Add(part))
+                    _tmpMissingParts.Add(part);
+            }
+            _tmpMissingParts.Sort((a, b) => AncestorsCount(a).CompareTo(AncestorsCount(b)));
+            var missingParts = _tmpMissingParts;
 
             foreach (var part in missingParts)
             {

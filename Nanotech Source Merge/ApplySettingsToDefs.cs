@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -20,16 +19,14 @@ namespace Nanotech
             var nanoTurretGun = DefDatabase<ThingDef>.GetNamedSilentFail("NanoTurretGun");
             if (nanoTurretGun != null)
             {
-                var verbsField = typeof(ThingDef).GetField("verbs",
-                    BindingFlags.Instance | BindingFlags.Public);
-                var verbsList = verbsField?.GetValue(nanoTurretGun) as List<VerbProperties>;
+                var verbsList = nanoTurretGun.verbs;
 
                 if (verbsList == null || verbsList.Count == 0)
                 {
                     var turretDef = DefDatabase<ThingDef>.GetNamedSilentFail("NanoTurret");
                     var gunDef = turretDef?.building?.turretGunDef;
                     if (gunDef != null)
-                        verbsList = verbsField?.GetValue(gunDef) as List<VerbProperties>;
+                        verbsList = gunDef.verbs;
                 }
 
                 if (verbsList != null && verbsList.Count > 0)

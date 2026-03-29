@@ -14,6 +14,7 @@ namespace Nanotech
         private readonly Dictionary<Pawn, int> trackedExpire = new Dictionary<Pawn, int>(64);
 
         private static readonly List<Pawn> tmpInRadius = new List<Pawn>(64);
+        private static readonly HashSet<Pawn> tmpInRadiusSet = new HashSet<Pawn>();
         private static readonly List<Pawn> tmpToClear = new List<Pawn>(64);
 
         public override void CompTick()
@@ -37,7 +38,8 @@ namespace Nanotech
                 Props.activeSound.PlayOneShot(new TargetInfo(parent.Position, map));
 
             tmpInRadius.Clear();
-            CollectMechsInRadius(map, tmpInRadius);
+            tmpInRadiusSet.Clear();
+            CollectMechsInRadius(map, tmpInRadius, tmpInRadiusSet);
 
             int now = Find.TickManager.TicksGame;
             for (int i = 0; i < tmpInRadius.Count; i++)
@@ -50,7 +52,7 @@ namespace Nanotech
             tmpToClear.Clear();
             foreach (var kv in trackedExpire)
             {
-                if (!tmpInRadius.Contains(kv.Key) && now > kv.Value)
+                if (!tmpInRadiusSet.Contains(kv.Key) && now > kv.Value)
                     tmpToClear.Add(kv.Key);
             }
 
@@ -62,10 +64,11 @@ namespace Nanotech
             }
 
             tmpInRadius.Clear();
+            tmpInRadiusSet.Clear();
             tmpToClear.Clear();
         }
 
-        private void CollectMechsInRadius(Map map, List<Pawn> buffer)
+        private void CollectMechsInRadius(Map map, List<Pawn> buffer, HashSet<Pawn> bufferSet)
         {
             float rangeSq = Props.range * Props.range;
             var allPawns = map.mapPawns.AllPawns;
@@ -78,7 +81,7 @@ namespace Nanotech
                 if (p.Faction != Faction.OfPlayer &&
                     !(Props.alsoAffectNonHostileAllies && p.Faction != null && !p.Faction.HostileTo(Faction.OfPlayer)))
                     continue;
-                if (!buffer.Contains(p)) buffer.Add(p);
+                if (bufferSet.Add(p)) buffer.Add(p);
             }
         }
 

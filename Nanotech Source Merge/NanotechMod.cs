@@ -62,7 +62,7 @@ namespace Nanotech
         {
             Rect titleRect = GenUI.TopPartPixels(inRect, 35f);
             Text.Font = GameFont.Medium;
-            Widgets.Label(titleRect, "Nanotech Settings");
+            Widgets.Label(titleRect, "Settings");
             Text.Font = GameFont.Small;
 
             Rect tabsRect = new Rect(inRect.x, titleRect.yMax + 5f, inRect.width, 32f);
@@ -174,7 +174,7 @@ namespace Nanotech
             ls.Label("Nanochest Storage");
             ls.GapLine();
             IntField(ls, "Max Items per Cell (1-9999):", ref Settings.chestSlots, 1, 9999, ref bufChestSlots);
-            ls.Label("If it doesn't work right away, try restarting.");
+            ls.Label("If it doesn't work right away, try saving and loading your game.");
         }
 
         private void DrawMechBooster(Listing_Standard ls)

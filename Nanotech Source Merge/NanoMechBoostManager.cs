@@ -8,6 +8,7 @@ namespace Nanotech
     public static class NanoMechBoostManager
     {
         private static readonly Dictionary<Pawn, HashSet<Thing>> sourcesByPawn = new Dictionary<Pawn, HashSet<Thing>>(256);
+        private static readonly Dictionary<Thing, HashSet<Pawn>> pawnsBySource = new Dictionary<Thing, HashSet<Pawn>>(64);
         private static Game _lastGame;
 
         public static int GetCount(Pawn p)
@@ -26,6 +27,7 @@ namespace Nanotech
             if (Current.Game != _lastGame)
             {
                 sourcesByPawn.Clear();
+                pawnsBySource.Clear();
                 _lastGame = Current.Game;
             }
 
@@ -36,6 +38,14 @@ namespace Nanotech
             }
 
             set.Add(source);
+
+            if (!pawnsBySource.TryGetValue(source, out var pawnSet))
+            {
+                pawnSet = new HashSet<Pawn>();
+                pawnsBySource[source] = pawnSet;
+            }
+            pawnSet.Add(p);
+
             EnsureHediffWithSeverity(p, def, set.Count, source);
         }
 
@@ -44,6 +54,7 @@ namespace Nanotech
             if (p == null || source == null || def == null) return;
             if (!sourcesByPawn.TryGetValue(p, out var set)) return;
             if (!set.Remove(source)) return;
+            if (pawnsBySource.TryGetValue(source, out var pawnSet)) pawnSet.Remove(p);
 
             int count = set.Count;
             if (count <= 0)
@@ -62,13 +73,15 @@ namespace Nanotech
         public static void CleanupForSource(Thing source, HediffDef def)
         {
             if (source == null || def == null) return;
-            var affectedPawns = new List<Pawn>();
-            foreach (var kv in sourcesByPawn)
+            if (!pawnsBySource.TryGetValue(source, out var pawns) || pawns.Count == 0)
             {
-                if (kv.Value.Contains(source)) affectedPawns.Add(kv.Key);
+                pawnsBySource.Remove(source);
+                return;
             }
-            for (int i = 0; i < affectedPawns.Count; i++)
-                Unregister(affectedPawns[i], source, def);
+            var toUnregister = new List<Pawn>(pawns);
+            pawnsBySource.Remove(source);
+            for (int i = 0; i < toUnregister.Count; i++)
+                Unregister(toUnregister[i], source, def);
         }
 
         private static void EnsureHediffWithSeverity(Pawn p, HediffDef def, int count, Thing linkTo = null)

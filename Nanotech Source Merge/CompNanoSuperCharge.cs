@@ -11,6 +11,7 @@ namespace Nanotech
         public CompProperties_NanoSuperCharge Props => (CompProperties_NanoSuperCharge)props;
 
         private readonly List<Pawn> _pawns = new List<Pawn>(8);
+        private readonly HashSet<Pawn> _pawnsSet = new HashSet<Pawn>();
 
         public override void CompTick()
         {
@@ -31,17 +32,19 @@ namespace Nanotech
             float delta = perTick * ticksThisCall;
 
             _pawns.Clear();
-
-            foreach (var c in parent.OccupiedRect().ExpandedBy(1).Cells)
-                CollectMechsAt(map, c);
-
-            var ic = parent.InteractionCell;
-            if (ic.IsValid) CollectMechsAt(map, ic);
+            _pawnsSet.Clear();
 
             if (Props.scanRadius > 0f)
             {
                 foreach (var c in GenRadial.RadialCellsAround(parent.Position, Props.scanRadius, true))
                     CollectMechsAt(map, c);
+            }
+            else
+            {
+                foreach (var c in parent.OccupiedRect().ExpandedBy(1).Cells)
+                    CollectMechsAt(map, c);
+                var ic = parent.InteractionCell;
+                if (ic.IsValid) CollectMechsAt(map, ic);
             }
 
             for (int i = 0; i < _pawns.Count; i++)
@@ -67,6 +70,7 @@ namespace Nanotech
             }
 
             _pawns.Clear();
+            _pawnsSet.Clear();
             parent.GetComp<CompThingContainer>()?.innerContainer?.ClearAndDestroyContents(DestroyMode.Vanish);
         }
 
@@ -76,7 +80,7 @@ namespace Nanotech
             var list = map.thingGrid.ThingsListAtFast(c);
             for (int i = 0; i < list.Count; i++)
             {
-                if (list[i] is Pawn p && p.RaceProps?.IsMechanoid == true && !_pawns.Contains(p))
+                if (list[i] is Pawn p && p.RaceProps?.IsMechanoid == true && _pawnsSet.Add(p))
                     _pawns.Add(p);
             }
         }

@@ -1,0 +1,9 @@
+F:\SteamLibrary\steamapps\common\RimWorld\Mods\[HYE] Nanotech Overpower\1.6\Assemblies\Nanotech.dll
+F:\SteamLibrary\steamapps\common\RimWorld\Mods\[HYE] Nanotech Overpower\1.6\Assemblies\Nanotech.pdb
+C:\Users\pedro\Desktop\Nanotech Source Merge\obj\Debug\Nanotech.csproj.AssemblyReference.cache
+C:\Users\pedro\Desktop\Nanotech Source Merge\obj\Debug\Nanotech.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\pedro\Desktop\Nanotech Source Merge\obj\Debug\Nanotech.AssemblyInfoInputs.cache
+C:\Users\pedro\Desktop\Nanotech Source Merge\obj\Debug\Nanotech.AssemblyInfo.cs
+C:\Users\pedro\Desktop\Nanotech Source Merge\obj\Debug\Nanotech.csproj.CoreCompileInputs.cache
+C:\Users\pedro\Desktop\Nanotech Source Merge\obj\Debug\Nanotech.dll
+C:\Users\pedro\Desktop\Nanotech Source Merge\obj\Debug\Nanotech.pdb
