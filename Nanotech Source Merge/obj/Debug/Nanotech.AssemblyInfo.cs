@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Nanotech")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2a3aac2f4eb8dfeaeb3159125403e2d0e262c596")]
 [assembly: System.Reflection.AssemblyProductAttribute("Nanotech")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Nanotech")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\pedro\\Desktop\\Nanotech Source Merge\\Nanotech.csproj": {}
+    "C:\\Users\\pedro\\Desktop\\Nanotech Source Merge\\Nanotech Source Merge\\Nanotech.csproj": {}
   },
   "projects": {
-    "C:\\Users\\pedro\\Desktop\\Nanotech Source Merge\\Nanotech.csproj": {
+    "C:\\Users\\pedro\\Desktop\\Nanotech Source Merge\\Nanotech Source Merge\\Nanotech.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\pedro\\Desktop\\Nanotech Source Merge\\Nanotech.csproj",
+        "projectUniqueName": "C:\\Users\\pedro\\Desktop\\Nanotech Source Merge\\Nanotech Source Merge\\Nanotech.csproj",
         "projectName": "Nanotech",
-        "projectPath": "C:\\Users\\pedro\\Desktop\\Nanotech Source Merge\\Nanotech.csproj",
+        "projectPath": "C:\\Users\\pedro\\Desktop\\Nanotech Source Merge\\Nanotech Source Merge\\Nanotech.csproj",
         "packagesPath": "C:\\Users\\pedro\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\pedro\\Desktop\\Nanotech Source Merge\\obj\\",
+        "outputPath": "C:\\Users\\pedro\\Desktop\\Nanotech Source Merge\\Nanotech Source Merge\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\pedro\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -43,7 +43,7 @@
       "frameworks": {
         "net472": {
           "targetAlias": "net472",
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.203\\RuntimeIdentifierGraph.json"
         }
       }
     }

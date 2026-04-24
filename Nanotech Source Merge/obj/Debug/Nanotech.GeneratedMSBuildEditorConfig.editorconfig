@@ -1,6 +1,6 @@
 is_global = true
 build_property.RootNamespace = Nanotech
-build_property.ProjectDir = C:\Users\pedro\Desktop\Nanotech Source Merge\
+build_property.ProjectDir = C:\Users\pedro\Desktop\Nanotech Source Merge\Nanotech Source Merge\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.CsWinRTUseWindowsUIXamlProjections = false
