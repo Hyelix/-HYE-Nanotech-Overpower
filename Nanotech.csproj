@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ModAssemblies>$(NANOTECH_MOD_DIR)\Assemblies\</ModAssemblies>
+  </PropertyGroup>
+
+  <Target Name="AfterBuild">
+    <Message Text="Copying $(TargetPath) to $(ModAssemblies)" Importance="high" />
+    <MakeDir Directories="$(ModAssemblies)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModAssemblies)" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).pdb"
+      DestinationFolder="$(ModAssemblies)"
+      Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+  </Target>
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>Nanotech</AssemblyName>
+    <RootNamespace>Nanotech</RootNamespace>
+    <OutputType>Library</OutputType>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>F:\SteamLibrary\steamapps\common\RimWorld\Mods\[HYE] Nanotech Overpower\1.6\Assemblies\</OutputPath>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RimWorldManaged>F:\SteamLibrary\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\</RimWorldManaged>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(RimWorldManaged)Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(RimWorldManaged)UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(RimWorldManaged)UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(RimWorldManaged)Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(RimWorldManaged)UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(RimWorldManaged)UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
