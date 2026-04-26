@@ -58,8 +58,43 @@ namespace Nanotech
 
         public override string SettingsCategory() => "Nanotech Overpower";
 
+        // Initializes all numeric buffers from current settings values.
+        // TextFieldNumeric mutates the buffer when the user types; if a buffer
+        // is null on first paint *and* the value happens to be outside the
+        // allowed [min,max] range, the call can throw inside OnGUI, breaking
+        // the surrounding Listing_Standard and "freezing" the rest of the tab.
+        // Calling this once before the first draw avoids that whole class of bug.
+        private void EnsureBuffers()
+        {
+            if (bufChestSlots != null) return; // already initialized
+
+            bufChestSlots       = Settings.chestSlots.ToString();
+            bufNanobotsVal      = Settings.nanobotsMarketValue.ToString();
+            bufTurretRange      = Settings.turret_range.ToString("0.##");
+            bufMechRange        = Settings.mech_range.ToString("0.##");
+            bufMechScan         = Settings.mech_scanIntervalTicks.ToString();
+            bufMechLinger       = Settings.mech_lingerTicks.ToString();
+            bufRegRadius        = Settings.reg_radius.ToString("0.##");
+            bufRegTick          = Settings.reg_tickInterval.ToString();
+            bufRegBuildHeal     = Settings.reg_buildingHealPerPulse.ToString();
+            bufRegItemRepair    = Settings.reg_itemRepairPerPulse.ToString();
+            bufRegPawnHeal      = Settings.reg_pawnHealPerPulse.ToString("0.##");
+            bufRegPermThresh    = Settings.reg_permanentRemoveThreshold.ToString("0.###");
+            bufRegDiseasePulse  = Settings.reg_diseaseSeverityPerPulse.ToString("0.###");
+            bufRegRemoveThresh  = Settings.reg_removeThreshold.ToString("0.###");
+            bufRegAnesthPulse   = Settings.reg_anestheticSeverityPerPulse.ToString("0.##");
+            bufRegFilthPulse    = Settings.reg_filthLevelsPerPulse.ToString();
+            bufRegFireSize      = Settings.reg_fireSizePerPulse.ToString("0.##");
+            bufRegFireThresh    = Settings.reg_fireExtinguishThreshold.ToString("0.##");
+            bufRegMaxFires      = Settings.reg_maxFiresPerPulse.ToString();
+            bufRegMissParts     = Settings.reg_missingPartsPerPulse.ToString();
+            bufRegWornRepair    = Settings.reg_wornApparelRepairPerPulse.ToString();
+        }
+
         public override void DoSettingsWindowContents(Rect inRect)
         {
+            EnsureBuffers();
+
             Rect titleRect = GenUI.TopPartPixels(inRect, 35f);
             Text.Font = GameFont.Medium;
             Widgets.Label(titleRect, "Settings");
@@ -87,68 +122,18 @@ namespace Nanotech
             Rect contentRect = new Rect(inRect.x, contentY, inRect.width, contentHeight);
             Rect viewRect = new Rect(0f, 0f, contentRect.width - 16f, 0f);
 
-            var ls = new Listing_Standard();
-
             if (currentTab == 0)
-            {
-                viewRect.height = scrollChestHeight;
-                Widgets.BeginScrollView(contentRect, ref scrollChestPos, viewRect, true);
-                ls.Begin(new Rect(0f, 0f, viewRect.width, viewRect.height));
-                DrawChest(ls);
-                scrollChestHeight = ls.CurHeight + 50f;
-                ls.End();
-                Widgets.EndScrollView();
-            }
+                DrawScrollableTab(contentRect, viewRect, ref scrollChestPos, ref scrollChestHeight, DrawChest);
             else if (currentTab == 1)
-            {
-                viewRect.height = scrollMechHeight;
-                Widgets.BeginScrollView(contentRect, ref scrollMechPos, viewRect, true);
-                ls.Begin(new Rect(0f, 0f, viewRect.width, viewRect.height));
-                DrawMechBooster(ls);
-                scrollMechHeight = ls.CurHeight + 50f;
-                ls.End();
-                Widgets.EndScrollView();
-            }
+                DrawScrollableTab(contentRect, viewRect, ref scrollMechPos, ref scrollMechHeight, DrawMechBooster);
             else if (currentTab == 2)
-            {
-                viewRect.height = scrollObGenHeight;
-                Widgets.BeginScrollView(contentRect, ref scrollObGenPos, viewRect, true);
-                ls.Begin(new Rect(0f, 0f, viewRect.width, viewRect.height));
-                DrawObeliskGeneral(ls);
-                scrollObGenHeight = ls.CurHeight + 50f;
-                ls.End();
-                Widgets.EndScrollView();
-            }
+                DrawScrollableTab(contentRect, viewRect, ref scrollObGenPos, ref scrollObGenHeight, DrawObeliskGeneral);
             else if (currentTab == 3)
-            {
-                viewRect.height = scrollObTgtHeight;
-                Widgets.BeginScrollView(contentRect, ref scrollObTgtPos, viewRect, true);
-                ls.Begin(new Rect(0f, 0f, viewRect.width, viewRect.height));
-                DrawObeliskTargets(ls);
-                scrollObTgtHeight = ls.CurHeight + 50f;
-                ls.End();
-                Widgets.EndScrollView();
-            }
+                DrawScrollableTab(contentRect, viewRect, ref scrollObTgtPos, ref scrollObTgtHeight, DrawObeliskTargets);
             else if (currentTab == 4)
-            {
-                viewRect.height = scrollObAdvHeight;
-                Widgets.BeginScrollView(contentRect, ref scrollObAdvPos, viewRect, true);
-                ls.Begin(new Rect(0f, 0f, viewRect.width, viewRect.height));
-                DrawObeliskAdvanced(ls);
-                scrollObAdvHeight = ls.CurHeight + 50f;
-                ls.End();
-                Widgets.EndScrollView();
-            }
+                DrawScrollableTab(contentRect, viewRect, ref scrollObAdvPos, ref scrollObAdvHeight, DrawObeliskAdvanced);
             else if (currentTab == 5)
-            {
-                viewRect.height = scrollMiscHeight;
-                Widgets.BeginScrollView(contentRect, ref scrollMiscPos, viewRect, true);
-                ls.Begin(new Rect(0f, 0f, viewRect.width, viewRect.height));
-                DrawMisc(ls);
-                scrollMiscHeight = ls.CurHeight + 50f;
-                ls.End();
-                Widgets.EndScrollView();
-            }
+                DrawScrollableTab(contentRect, viewRect, ref scrollMiscPos, ref scrollMiscHeight, DrawMisc);
 
             Widgets.DrawLineHorizontal(footerRect.x, footerRect.y - 5f, footerRect.width);
 
@@ -156,6 +141,7 @@ namespace Nanotech
             {
                 Settings.ResetToDefaults();
                 ClearBuffers();
+                EnsureBuffers(); // repopulate from the freshly-defaulted settings
                 WriteSettings();
                 SoundStarter.PlayOneShotOnCamera(SoundDefOf.Tick_Low);
                 Messages.Message("All settings reset to defaults.", MessageTypeDefOf.TaskCompletion, false);
@@ -166,6 +152,43 @@ namespace Nanotech
                 WriteSettings();
                 SoundStarter.PlayOneShotOnCamera(SoundDefOf.Click);
                 Messages.Message("Settings Applied to Defs!", MessageTypeDefOf.PositiveEvent, false);
+            }
+        }
+
+        // Renders one tab inside its own scroll view + Listing_Standard.
+        // The try/finally guarantees that End() and EndScrollView() always
+        // run, even if a child draw throws — without this, an exception
+        // mid-listing leaves the GUI in an inconsistent state and the rest
+        // of the tab disappears (and stays gone, frame after frame).
+        private void DrawScrollableTab(
+            Rect contentRect,
+            Rect viewRect,
+            ref Vector2 scrollPos,
+            ref float scrollHeight,
+            System.Action<Listing_Standard> drawAction)
+        {
+            viewRect.height = scrollHeight;
+            Widgets.BeginScrollView(contentRect, ref scrollPos, viewRect, true);
+            var ls = new Listing_Standard();
+            // IMPORTANT: pass a *very large* height to Begin, NOT viewRect.height.
+            // Listing_Standard auto-wraps into a "new column" when curY exceeds the
+            // rect height passed here, which manifests as the cursor snapping back
+            // to ~0 mid-draw and later controls being drawn on top of earlier ones.
+            // We want a plain vertical layout; the scroll view handles clipping.
+            ls.Begin(new Rect(0f, 0f, viewRect.width, 100000f));
+            try
+            {
+                drawAction(ls);
+                scrollHeight = ls.CurHeight + 50f;
+            }
+            catch (System.Exception e)
+            {
+                Log.ErrorOnce("[Nanotech] Settings draw threw: " + e, 0x4E414E54);
+            }
+            finally
+            {
+                ls.End();
+                Widgets.EndScrollView();
             }
         }
 
@@ -256,9 +279,12 @@ namespace Nanotech
                 ls.Label("<b>Regenerate Missing Parts</b>");
                 DrawTwoChecksRow(ls, "Internal Organs", ref Settings.reg_regenInternalOrgans, "External Limbs", ref Settings.reg_regenExternalLimbs);
                 IntField(ls, "Parts per Pulse:", ref Settings.reg_missingPartsPerPulse, 1, 10, ref bufRegMissParts);
-                ls.Gap();
-                ls.Label("<b>Worn Apparel</b>");
-                ls.CheckboxLabeled("Repair Worn Apparel", ref Settings.reg_repairWornApparel);
+            }
+            ls.Gap();
+            ls.Label("<b>Worn Apparel</b>");
+            ls.CheckboxLabeled("Repair Worn Apparel", ref Settings.reg_repairWornApparel);
+            if (Settings.reg_repairWornApparel)
+            {
                 IntField(ls, "HP per pulse:", ref Settings.reg_wornApparelRepairPerPulse, 1, 500, ref bufRegWornRepair);
             }
             ls.Gap();
